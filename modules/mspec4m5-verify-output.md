@@ -57,7 +57,11 @@ Always format output. On any failures, add a `<note>` block as the LAST child of
 
 - Root: `<specification>`
 - First child: `<meta source="epiphany-prompt"/>`
+- Second child: `<original_input>` containing the verbatim contents of `00-input.md` (CDATA-wrap if content contains `<`, `>`, `&`, or embedded XML)
+- Subsequent children: semantic sections from the draft
 - Last child (only if PASS-WITH-NOTES): `<note>` summarizing gaps
+
+See SKILL.md `## Output Formats` for the full format spec.
 
 ## Return message
 
@@ -68,6 +72,7 @@ VERIFICATION: PASS
 
 <specification>
   <meta source="epiphany-prompt"/>
+  <original_input><![CDATA[...]]></original_input>
   ...
 </specification>
 ```
@@ -79,6 +84,7 @@ VERIFICATION: PASS-WITH-NOTES — [one-sentence summary, e.g., "3 requirements m
 
 <specification>
   <meta source="epiphany-prompt"/>
+  <original_input><![CDATA[...]]></original_input>
   ...
   <note>Verification notes: ...</note>
 </specification>

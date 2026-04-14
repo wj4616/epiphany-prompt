@@ -6,6 +6,8 @@ scale_variants, kb_sources, activation, return_contract.
 Usage: validate-frontmatter.py <path-to-module.md> [...]
 Exit 0 if all files pass; 1 otherwise.
 """
+from __future__ import annotations
+
 import sys
 import re
 from pathlib import Path

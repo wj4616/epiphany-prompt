@@ -49,14 +49,12 @@ else
     FAIL=1
 fi
 
-echo "== kb/ and reports/ exist (from prior harvest — must not be touched) =="
-for d in kb reports; do
-    if [[ -d "$SKILL_DIR/$d" ]]; then
-        echo "OK: $d/ present"
-    else
-        echo "FAIL: $d/ missing (should exist from prior KB harvest)"; FAIL=1
-    fi
-done
+echo "== kb/ (optional — populated on demand) =="
+if [[ -d "$SKILL_DIR/kb" ]]; then
+    echo "OK: kb/ present (harvested)"
+else
+    echo "NOTE: kb/ not present — KB is harvested on demand, not required for skill registration"
+fi
 
 echo "== Save path directory =="
 if [[ -d "$HOME/docs/epiphany/prompts" ]]; then

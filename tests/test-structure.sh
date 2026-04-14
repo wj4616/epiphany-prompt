@@ -66,8 +66,8 @@ if [[ -f "$SKILL_DIR/SKILL.md" ]]; then
     assert_grep 'STEP 7 — OUTPUT' "$SKILL_DIR/SKILL.md" "STEP 7"
     assert_grep 'Double-failure' "$SKILL_DIR/SKILL.md" "double-failure path"
     assert_grep 'DD-MM-\{filename_slug\}.md' "$SKILL_DIR/SKILL.md" "save path pattern"
-    assert_grep 'append .*v2' "$SKILL_DIR/SKILL.md" "collision suffix v2"
-    assert_grep '.v3.' "$SKILL_DIR/SKILL.md" "collision suffix v3"
+    assert_grep 'append .*-v2' "$SKILL_DIR/SKILL.md" "collision suffix v2"
+    assert_grep '[-]v3\b' "$SKILL_DIR/SKILL.md" "collision suffix v3"
     assert_grep 'mkdir -p ~/docs/epiphany/prompts' "$SKILL_DIR/SKILL.md" "save path mkdir"
     assert_grep 'STEP 8 — SESSION ARTIFACTS' "$SKILL_DIR/SKILL.md" "STEP 8"
     assert_grep '^## Chained spec\+plan execution' "$SKILL_DIR/SKILL.md" "chained spec+plan section"
@@ -105,6 +105,20 @@ if [[ -f "$SKILL_DIR/SKILL.md" ]]; then
     assert_grep 'Enhancement contract schema' "$SKILL_DIR/SKILL.md" "enhancement contract"
     assert_grep 'Verification report schema' "$SKILL_DIR/SKILL.md" "verification report"
     assert_grep '00-config' "$SKILL_DIR/SKILL.md" "00-config schema"
+
+    # Module Dependency Table: must have exactly 15 module rows
+    # (M12, M3 initial, M3 STANDARD repair, M3 DEEP repair, M4, M5 W4, M5 W5 repair,
+    #  M4M5 STANDARD, M4M5 DEEP, MSPEC12, MSPEC3, MSPEC4M5, MPLAN12, MPLAN3, MPLAN4M5)
+    dep_table_row_count=$(awk '
+        /^### Module Dependency Table/ { in_tbl = 1; next }
+        in_tbl && /^### / { exit }
+        in_tbl && /^\| *[A-Z][A-Z0-9]/ { n++ }
+        END { print n+0 }
+    ' "$SKILL_DIR/SKILL.md")
+    if (( dep_table_row_count != 15 )); then
+        echo "FAIL: Module Dependency Table — expected 15 module rows, found $dep_table_row_count"
+        FAIL=1
+    fi
 fi
 
 # All 11 module files + frontmatter

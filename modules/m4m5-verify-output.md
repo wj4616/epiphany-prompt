@@ -7,7 +7,8 @@ input_dependencies:
   - 01-inventory.md
   - 03-synthesis.md
 output_files:
-  - 04-verification.md
+  STANDARD: [04-verification.md]
+  DEEP: [06-verification-2.md]
 scale_variants: [STANDARD, DEEP]
 kb_sources:
   - kb/enhancement/self-refine.md
@@ -15,7 +16,9 @@ kb_sources:
   - kb/techniques/structured-output.md
 activation:
   mode: normal
-  wave: W3 (STANDARD) | W5 (DEEP)
+  wave:
+    STANDARD: 3
+    DEEP: 5
   role: verify+output
 return_contract: |
   PASS: "VERIFICATION: PASS\n\n<prompt>...</prompt>"
@@ -57,6 +60,7 @@ On FAIL: skip Phase 2. Return `VERIFICATION: FAIL — [one-sentence summary]`. D
 On PASS: format the output XML.
 - Root element: `<prompt>`
 - First child: `<meta source="epiphany-prompt"/>`
+- Second child: `<original_input>` containing the verbatim contents of `00-input.md` (CDATA-wrap if content contains `<`, `>`, `&`, or embedded XML)
 - Subsequent children: semantic sections from the draft
 - See SKILL.md `## Output Formats` for the full format spec
 
