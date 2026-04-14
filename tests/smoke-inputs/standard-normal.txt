@@ -1,0 +1,3 @@
+Build a function that takes a list of file paths (e.g. ~/data/file.csv, /tmp/output.json)
+and returns a dict mapping extension -> list of paths. Use Python 3.11.
+Handle: missing files (skip with warning), symlinks (follow), non-ASCII paths.

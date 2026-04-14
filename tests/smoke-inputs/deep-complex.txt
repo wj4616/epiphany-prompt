@@ -1,0 +1,10 @@
+Design a multi-stage audio processing plugin architecture for a VST3 plugin using
+JUCE 7.0.5. Modules: granular time-stretch, spectral morphing, stereo widener.
+Each must run on the audio thread with <1ms worst-case block latency at 256 samples,
+44.1 kHz. Support preset save/load via APVTS. UI uses LookAndFeel v4. Build with
+FetchContent-based CMake. Target Linux (REAPER for testing).
+
+Constraints:
+- No locks on audio thread
+- All state transitions via SmoothedValue
+- Sidechain input optional but must not break mono/stereo fallback

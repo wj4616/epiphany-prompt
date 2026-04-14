@@ -1,0 +1,3 @@
+Build a Claude Code skill that logs every tool call to a SQLite database with
+timestamp, tool name, and arguments. Should survive session restarts. MUST be
+zero-configuration — just drop in and it works.

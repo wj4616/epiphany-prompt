@@ -1,0 +1,1 @@
+Summarize this article at https://example.com/article in 3 bullet points for a technical audience.

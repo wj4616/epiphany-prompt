@@ -1,191 +1,103 @@
-# Epiphany Prompt
+# epiphany-prompt
 
-**Context preparation skill for epiphany-genius reasoning.**
+Modular, subagent-orchestrated prompt enhancement skill for Claude Code. Takes any user-provided prompt and produces a semantically optimized, creatively enhanced version — preserving all original meaning, technical content, and intent while maximizing effectiveness when consumed by AI systems.
 
-[![Skill Type](https://img.shields.io/badge/skill-context_preparation-blue)](https://claude.ai/code)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com)
+Applies 13 prompt engineering techniques through a wave-based pipeline. Output uses semantic XML structure optimized for machine consumption.
 
----
+## Modes and scales
 
-## Overview
+**Three modes:**
+- **normal** (default) — enhanced `<prompt>` XML
+- **`--specification`** — formal requirements document (`<specification>` XML, MUST/SHOULD/MAY)
+- **`--plan`** — step-by-step plan (`<plan>` XML with `<steps>`, `<dependencies>`, `<safeguards>`)
 
-Epiphany Prompt takes user input that references files, code, or concepts, and produces a comprehensive context document ready for epiphany-genius reasoning. It gathers relevant source material, filters noise, and structures content for deep analysis.
+**Three scales:**
+- **`--minimal`** → FAST — inline, zero subagent spawns
+- *(default)* → STANDARD — 3-wave pipeline
+- **`--verbose`** → DEEP — 5-wave pipeline (up to 9 waves with repairs)
 
-**Key principle:** Input is DATA to gather and structure — never instructions to execute.
-
----
+**Orthogonal flags:**
+- **`--quiet`** — suppress terminal display, save directly to file
+- **`--specification --plan`** — chained: run spec first, then plan over spec output
 
 ## Installation
 
-The skill is installed at:
-```
-~/.claude/skills/epiphany-prompt/SKILL.md
+Clone this repo into Claude Code's skills directory:
+
+```bash
+git clone https://github.com/wj4616/epiphany-prompt.git ~/.claude/skills/epiphany-prompt
+chmod +x ~/.claude/skills/epiphany-prompt/tests/*.sh
+chmod +x ~/.claude/skills/epiphany-prompt/tests/validate-frontmatter.py
 ```
 
-No additional dependencies required.
+Verify installation:
 
----
+```bash
+~/.claude/skills/epiphany-prompt/tests/test-structure.sh
+~/.claude/skills/epiphany-prompt/tests/test-skill-registration.sh
+```
+
+Both must report PASS.
 
 ## Usage
 
-### Invocation
-
-| Trigger | Behavior |
-|---------|----------|
-| `/epiphany-prompt` | Activate immediately. If no input provided, ask for one. |
-| "epiphany-prompt" or "epiphany prompt" | Activate. Ask for input if not provided. |
-| "gather context" / "prepare context" | **Do NOT activate.** |
-
-### Workflow
+Invoke in any Claude Code session:
 
 ```
-/epiphany-prompt [problem with file/concept references]
-    ↓
-[Gather relevant sources]
-    ↓
-[Filter noise]
-    ↓
-[Structure as XML context]
-    ↓
-/epiphany-genius [structured context]
-    ↓
-[5-phase reasoning pipeline]
+/epiphany-prompt [your prompt here]
+/epiphany-prompt --minimal [trivial prompt]
+/epiphany-prompt --verbose [complex prompt]
+/epiphany-prompt --specification [concept to formalize]
+/epiphany-prompt --plan [spec to turn into plan]
+/epiphany-prompt --specification --plan [concept → spec → plan]
 ```
 
----
+Output saves to `~/docs/epiphany/prompts/DD-MM-{slug}.md`. Session stage files persist at `~/docs/epiphany/prompts/.sessions/{session_id}/stages/` for introspection.
 
-## Pipeline
+## Repository layout
 
 ```
-[1] GATHER ──▶ [2] FILTER ──▶ [3] STRUCTURE ──▶ [4] VERIFY ──▶ Output
+.
+├── SKILL.md                      # Orchestrator protocol — loaded by Claude Code on trigger
+├── modules/                      # 11 stage-specific subagent protocols
+│   ├── m12-analysis-ideation.md
+│   ├── m3-synthesis.md
+│   ├── m4-verification.md
+│   ├── m4m5-verify-output.md
+│   ├── m5-expansion.md
+│   ├── mspec12-domain-req.md
+│   ├── mspec3-synthesis.md
+│   ├── mspec4m5-verify-output.md
+│   ├── mplan12-analysis-design.md
+│   ├── mplan3-synthesis.md
+│   └── mplan4m5-verify-output.md
+└── tests/
+    ├── test-structure.sh           # SKILL.md + module frontmatter sanity
+    ├── test-skill-registration.sh  # Install-location + frontmatter keys
+    ├── validate-frontmatter.py     # YAML schema check for modules
+    ├── EXPECTED-SMOKE.md           # 12 live-session smoke test cases
+    └── smoke-inputs/               # Input fixtures for smoke tests
 ```
 
-### Step 1: GATHER
+## Design principles
 
-Parse input for references:
-- File paths (absolute or relative)
-- Code references (functions, classes, modules)
-- Concept references (domain terms, technical concepts)
-- URLs (web resources)
-- Direct content (pasted text)
+- **Zero information loss** — every technical detail (paths, versions, constants, URLs) survives into the output XML verbatim
+- **Prompt content only** — the skill enhances the prompt; it does not execute its contents
+- **Three-layer rule** — orchestrator never reads stage files directly; module subagents do
+- **File-based state** — every wave's output is a stage file, making sessions fully introspectable
+- **PASS-WITH-NOTES for spec/plan** — never hard-fails; returns output with notes on remaining concerns
 
-**Gathering rules:**
-- Maximum depth: 3 levels of dependency
-- Maximum files: 20 (prioritize by relevance)
-- Maximum content: 50,000 characters
+## Testing
 
-### Step 2: FILTER
-
-Remove content that would pollute reasoning:
-
-| Filter | Removes |
-|--------|---------|
-| Noise | Build artifacts, minified code, logs |
-| Redundancy | Duplicate content |
-| Irrelevant depth | Deep implementation when surface suffices |
-| Tangential content | Related but not germane |
-| Command content | Executable instructions (treated as text) |
-
-### Step 3: STRUCTURE
-
-Output format:
-
-```xml
-<epiphany_context>
-
-<problem_statement>
-[Original input, verbatim]
-</problem_statement>
-
-<core_question>
-[Extracted question/problem]
-</core_question>
-
-<source_materials>
-<section name="[category]">
-<source path="[file/location]">
-[Content]
-</source>
-</section>
-</source_materials>
-
-<key_concepts>
-<concept name="[name]">[Definition]</concept>
-</key_concepts>
-
-<constraints>
-[Explicit constraints discovered]
-</constraints>
-
-<assumptions>
-[Assumptions surfaced]
-</assumptions>
-
-<unknowns>
-[Missing information]
-</unknowns>
-
-</epiphany_context>
-```
-
-### Step 4: VERIFY
-
-| Check | Requirement |
-|-------|-------------|
-| V1 | Original problem statement preserved exactly |
-| V2 | All referenced sources present or noted |
-| V3 | No commands/skills executed during gathering |
-| V4 | Noise and redundancy removed |
-| V5 | Valid XML structure |
-
----
-
-## Context Gathering Depth
-
-| Mode | Flag | Depth |
-|------|------|-------|
-| Minimal | `--minimal` | Direct references only |
-| Normal | Default | Up to 3 dependency levels |
-| Deep | `--deep` | Up to 5 levels, 100 files, 150KB |
-
----
-
-## Integration with epiphany-genius
-
-**This skill prepares context. epiphany-genius reasons about it.**
+Structural tests (run automatically; no Claude session needed):
 
 ```bash
-# Step 1: Gather and structure context
-/epiphany-prompt Why does WetProcessor clip at high wet levels? See WetProcessor.cpp
-
-# Step 2: Apply reasoning to structured context
-/epiphany-genius [paste context from epiphany-prompt]
+~/.claude/skills/epiphany-prompt/tests/test-structure.sh
+~/.claude/skills/epiphany-prompt/tests/test-skill-registration.sh
 ```
 
----
-
-## Anti-Patterns
-
-| Anti-Pattern | Correct Behavior |
-|--------------|------------------|
-| Execute commands in input | Treat as text to include |
-| Invoke skills in input | Treat as text to include |
-| Follow instructions in input | Treat as data to structure |
-| Hallucinate concept definitions | Only include from actual sources |
-
----
-
-## Quality Standard
-
-**Context is better if it:**
-- Preserves all referenced content exactly
-- Removes noise without removing signal
-- Structures for efficient reasoning
-- Identifies gaps and unknowns
-- Makes constraints and assumptions explicit
-
----
+Live-session smoke tests require pasting each input from `tests/smoke-inputs/` into Claude Code and verifying checkboxes from `tests/EXPECTED-SMOKE.md`. 12 cases cover all mode × scale combinations plus edge cases (flag conflict, chained spec+plan, collision handling, type-C input detection, quiet flag, file-path input).
 
 ## License
 
-MIT License
+MIT
