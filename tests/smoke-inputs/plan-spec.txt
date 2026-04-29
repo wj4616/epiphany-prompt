@@ -1,0 +1,12 @@
+<specification>
+  <meta source="epiphany-prompt"/>
+  <goal>Build a REST API for a todo list with user auth.</goal>
+  <requirements>
+    <requirement id="R1" level="MUST">Users can register, log in, log out</requirement>
+    <requirement id="R2" level="MUST">Each user has a private todo list</requirement>
+    <requirement id="R3" level="MUST">Todos have: title, done/not-done, created timestamp</requirement>
+    <requirement id="R4" level="SHOULD">Pagination for lists over 100 items</requirement>
+    <requirement id="R5" level="MAY">Tags on todos</requirement>
+  </requirements>
+  <stack>Python 3.11, FastAPI, SQLite, JWT auth</stack>
+</specification>

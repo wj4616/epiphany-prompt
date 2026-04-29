@@ -1,0 +1,2 @@
+I want a CLI tool that watches a directory and pipes new files through a configurable
+chain of processors. Plugins should be discoverable at runtime. Written in Rust.
